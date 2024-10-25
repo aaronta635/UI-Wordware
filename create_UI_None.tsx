@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react'
 import { Folder, FileText, Grid, Play, Share2, Lock, Plus, Globe, HelpCircle, Settings, MoreHorizontal } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -15,6 +16,8 @@ export default function Component() {
   const [flowContent, setFlowContent] = useState("")
   const [showPlaceholder, setShowPlaceholder] = useState(true)
   const [isRunning, setIsRunning] = useState(false)
+  const [inputs, setInputs] = useState([])
+  const [newInput, setNewInput] = useState({ name: "", description: "", type: "TEXT" })
   const flowContentInputRef = useRef<HTMLTextAreaElement>(null)
 
   const handleFlowContentFocus = () => {
@@ -29,6 +32,13 @@ export default function Component() {
 
   const handleRun = () => {
     setIsRunning(true)
+  }
+
+  const handleAddInput = () => {
+    if (newInput.name) {
+      setInputs([...inputs, newInput])
+      setNewInput({ name: "", description: "", type: "TEXT" })
+    }
   }
 
   return (
@@ -204,34 +214,60 @@ export default function Component() {
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4 bg-gray-100 p-2 rounded">
               <h2 className="text-lg font-semibold">INPUTS</h2>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline">+ ADD</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Input sets</DialogTitle>
-                  </DialogHeader>
-                  <div className="py-4">
-                    <div className="border rounded-md p-4 mb-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-lg">+</span>
-                        <span className="text-gray-500">New input set</span>
+              <div className="flex space-x-2">
+                {inputs.map((input, index) => (
+                  <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                    {input.name}
+                  </span>
+                ))}
+              </div>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm">+ ADD</Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+                  <SheetHeader>
+                    <SheetTitle>Add Input</SheetTitle>
+                  </SheetHeader>
+                  <div className="py-4 space-y-4">
+                    <div>
+                      <Label htmlFor="input-name">Name</Label>
+                      <Input
+                        id="input-name"
+                        value={newInput.name}
+                        onChange={(e) => setNewInput({...newInput, name: e.target.value})}
+                        placeholder="Name this input"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="input-description">Description (optional)</Label>
+                      <Textarea
+                        id="input-description"
+                        value={newInput.description}
+                        onChange={(e) => setNewInput({...newInput, description: e.target.value})}
+                        placeholder="Describe what data should be given"
+                      />
+                    </div>
+                    <div>
+                      <Label>Input type</Label>
+                      <div className="flex space-x-2 mt-2">
+                        {['TEXT', 'LONG TEXT', 'IMAGE'].map((type) => (
+                          <Button
+                            key={type}
+                            variant={newInput.type === type ? "default" : "outline"}
+                            onClick={() => setNewInput({...newInput, type})}
+                          >
+                            {type}
+                          </Button>
+                        ))}
                       </div>
                     </div>
-                    <div className="space-y-4">
-                      <p>This flow has no inputs.</p>
-                      <Button variant="outline" className="w-full justify-start">
-                        <Plus className="h-4 w-4 mr-2" /> Click to add an input
-                      </Button>
-                      <p className="text-gray-500">Or select 'Run'</p>
-                    </div>
-                    <p className="text-gray-400 mt-4">Tip: Create another set of inputs for easy switching</p>
+                    <Button onClick={handleAddInput}>Add Input</Button>
                   </div>
-                </DialogContent>
-              </Dialog>
+                </SheetContent>
+              </Sheet>
             </div>
             <div className="relative">
               <textarea
